@@ -1,0 +1,304 @@
+
+sudo apt install curl unzip nginx mysql-server php-fpm php-mysql-y
+sudo mysql_secure_installation
+
+sudo mysql
+
+CREATE DATABASE wordpress;
+CREATE USER 'wpuser'@'localhost' IDENTIFIED BY 'passowrd';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+
+
+#Создание конфигурационного файла для WordPress:
+
+sudo nano /etc/nginx/sites-available/wordpress
+server {
+    listen 80;
+    server_name your_domain.com;
+    root /var/www/wordpress;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+
+
+#Установка wordpress
+
+sudo curl -O https://wordpress.org/latest.zip
+
+cd /var/www/
+sudo unzip latest.zip
+sudo chown -R www-data:www-data /var/www/wordpress
+sudo chmod -R 755 /var/www/wordpress
+cd /var/www/wordpress
+sudo cp wp-config-sample.php wp-config.php
+sudo nano wp-config.php
+
+define('DB_NAME', 'wordpress');         // Имя базы данных
+define('DB_USER', 'wpuser');           // Имя пользователя
+define('DB_PASSWORD', 'your_password'); // Пароль
+define('DB_HOST', 'localhost');        // Сервер базы данных
+
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo ln -s /etc/nginx/sites-available/wordpress /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+
+
+#Установка exporters
+sudo apt install prometheus-node-exporter prometheus-mysqld-exporter prometheus-blackbox-exporter prometheus-nginx-exporter prometheus-pushgateway prometheus-process-exporter
+
+
+#Настройка prometheus-mysqld-exporter
+mysql
+CREATE USER 'mysqld_exporter'@'localhost' IDENTIFIED BY 'passowrd' WITH MAX_USER_CONNECTIONS 2;
+GRANT REPLICATION CLIENT, REPLICATION SLAVE, PROCESS, SHOW DATABASES, SHOW VIEW, SELECT ON *.* TO 'mysqld_exporter'@'localhost';
+FLUSH PRIVILEGES;
+EXIT
+
+
+sudo groupadd --system prometheus
+sudo useradd -s /sbin/nologin --system -g prometheus prometheus
+
+sudo nano /etc/.mysqld_exporter.cnf
+	[client]
+	user=mysqld_exporter
+	password=StrongPassword
+
+sudo chown root:prometheus /etc/.mysqld_exporter.cnf
+
+#Настройка Unit mysql_exporter
+sudo vim /etc/systemd/system/mysql_exporter.service
+
+	[Unit]
+	Description=Prometheus MySQL Exporter
+	After=network.target
+	User=prometheus
+	Group=prometheus
+
+	[Service]
+	Type=simple
+	Restart=always
+	ExecStart=/usr/bin/prometheus-mysqld-exporter \
+	--config.my-cnf /etc/.mysqld_exporter.cnf \
+	--collect.global_status \
+	--collect.info_schema.innodb_metrics \
+	--collect.auto_increment.columns \
+	--collect.info_schema.processlist \
+	--collect.binlog_size \
+	--collect.info_schema.tablestats \
+	--collect.global_variables \
+	--collect.info_schema.query_response_time \
+	--collect.info_schema.userstats \
+	--collect.info_schema.tables \
+	--collect.perf_schema.tablelocks \
+	--collect.perf_schema.file_events \
+	--collect.perf_schema.eventswaits \
+	--collect.perf_schema.indexiowaits \
+	--collect.perf_schema.tableiowaits \
+	--collect.slave_status \
+	--web.listen-address=0.0.0.0:9104
+
+	[Install]
+	WantedBy=multi-user.target
+	
+sudo systemctl daemon-reload
+sudo systemctl enable mysql_exporter
+sudo systemctl start mysql_exporter
+
+
+#Настройка nginx prometheus exporter
+sudo nano /etc/nginx/sites-available/wordpress
+# nginx prometheus exporter
+server {
+        listen 8080;
+
+        location /stub_status {
+                stub_status;
+                allow 127.0.0.1;
+                deny all;
+        }
+}
+sudo nginx -t
+sudo systemctl reload nginx
+
+#Настройка prometheus-blackbox-exporter
+/etc/prometheus/blackbox.yml
+	modules:
+	  http_2xx:
+		prober: http
+		timeout: 5s
+		http:
+		  valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+		  valid_status_codes: [200]
+		  method: GET
+		  no_follow_redirects: true
+		  fail_if_ssl: false
+		  fail_if_not_ssl: false
+		  fail_if_body_matches_regexp:
+			- "Could not connect to database"
+		  tls_config:
+			insecure_skip_verify: false
+		  preferred_ip_protocol: "ip4"
+		  ip_protocol_fallback: false
+
+
+
+
+#Настройка prometheus
+nano /etc/prometheus/prometheus.yml
+# Sample config for Prometheus.
+
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is >
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 >
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'example'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: ['localhost:9093']
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_>
+rule_files:
+  - alerts.yml	
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from >
+  - job_name: 'prometheus'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: node-prom
+    # If prometheus-node-exporter is installed, grab stats about the local
+    # machine by default.
+    static_configs:
+      - targets: ['localhost:9100']
+
+  - job_name: 'node-wp'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.128:9100']
+
+  - job_name: 'nginx-wp'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.128:9113']
+
+  - job_name: 'pushgateway-wp'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.128:9091']
+
+  - job_name: 'mysqld-wp'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.128:9104']
+
+  - job_name: 'processmon-wp'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.128:9256']
+
+  - job_name: 'blackbox-wp'
+    scrape_interval: 5s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://192.168.64.128    # Target to probe with https.
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 192.168.64.128:9115
+
+
+#Настройка правил Prometheus
+
+nano /etc/prometheus/alerts.yml
+
+groups:
+  - name: node-exporter
+    rules:
+      - alert: PrometheusTargetMissing
+        expr: up == 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Сервис node_exporter на сервере {{ $labels.instance }} недоступен"
+          description: "Возможно сервис node_exporter упал или сервер недоступен\n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+
+      - alert: PrometheusNotConnectedToAlertmanager
+        expr: prometheus_notifications_alertmanagers_discovered < 1
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Prometheus not connected to alertmanager (instance {{ $labels.instance }})
+          description: "Prometheus cannot connect the alertmanager\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+
+  - name: BlackBox_exporter
+    rules:
+        - alert: BlackboxProbeHttpFailure
+        expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
+          description: "HTTP status code is not 200-399\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+# Примеры правил 
+https://samber.github.io/awesome-prometheus-alerts/rules.html
+
+#Установка web alertmanager
+sudo apt install prometheus-alertmanager 
+/usr/share/prometheus/alertmanager/generate-ui.sh
+Настройка alertmanager
+nano /etc/prometheus/alertmanager.yml
+
+http://192.168.64.128:9093/#/status
+

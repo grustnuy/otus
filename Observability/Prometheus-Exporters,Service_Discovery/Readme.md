@@ -17,3 +17,15 @@
 
 ![html](img/alert.JPG)
 ![html](img/alert2.JPG)
+
+### Разворачивание хранилище метрик VictoriaMetrics
+![html](img/vivtoria.JPG)
+### Проверка отправки метрик в хранилище
+![html](img/vivtoria3.JPG)
+
+### Подключение DataSource в Grafana
+![html](img/datasource.JPG)
+
+
+![html](img/vivtoria2.JPG)
+

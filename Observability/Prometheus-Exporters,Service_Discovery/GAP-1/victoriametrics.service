@@ -7,11 +7,11 @@ Type=simple
 User=victoriametrics
 Group=victoriametrics
 PIDFile=/run/victoriametrics/victoriametrics.pid
-ExecStart=/usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoria>
+ExecStart=/usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoriametrics -retentionPeriod 14d
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 StartLimitBurst=5
 StartLimitInterval=0
-Restart=on-failure
+Restart=always
 RestartSec=1
 
 [Install]

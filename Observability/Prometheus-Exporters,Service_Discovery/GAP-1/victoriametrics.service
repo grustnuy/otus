@@ -7,7 +7,7 @@ Type=simple
 User=victoriametrics
 Group=victoriametrics
 PIDFile=/run/victoriametrics/victoriametrics.pid
-ExecStart=/usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoriametrics -retentionPeriod 14d
+ExecStart=/usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoriametrics -retentionPeriod 14d -selfScrapeInterval=20s
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 StartLimitBurst=5
 StartLimitInterval=0

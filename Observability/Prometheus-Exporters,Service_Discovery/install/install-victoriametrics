@@ -1,0 +1,59 @@
+wget https://github.com/VictoriaMetrics/VictoriaMetrics/releases/download/v1.108.1/victoria-metrics-linux-amd64-v1.108.1.tar.gz
+tar zxf victoria-metrics-linux-amd64-*.tar.gz -C /usr/local/bin/
+
+#Создаем служебного пользователя victoriametrics:
+useradd -r -c 'VictoriaMetrics TSDB Service' victoriametrics
+
+mkdir -p /var/lib/victoriametrics /run/victoriametrics
+chown victoriametrics:victoriametrics /var/lib/victoriametrics /run/victoriametrics
+
+
+# Создаем unit victoriametrics.service
+nano /etc/systemd/system/victoriametrics.service
+
+[Unit]
+Description=VictoriaMetrics
+After=network.target
+
+[Service]
+Type=simple
+User=victoriametrics
+Group=victoriametrics
+PIDFile=/run/victoriametrics/victoriametrics.pid
+ExecStart=/usr/local/bin/victoria-metrics-prod -storageDataPath /var/lib/victoriametrics -retentionPeriod 14d
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+StartLimitBurst=5
+StartLimitInterval=0
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+
+
+systemctl daemon-reload
+systemctl enable victoriametrics
+systemctl start victoriametrics
+
+#Настраиваим Prometheus
+/etc/prometheus/prometheus.yml
+
+global:
+  external_labels:
+    site: prod
+
+remote_write:
+  - url: http://192.168.0.15:8428/api/v1/write
+    queue_config:
+      max_samples_per_send: 10000
+      capacity: 20000
+      max_shards: 30
+
+- job_name: 'victoria'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.64.131:8428']
+
+
+
+systemctl restart prometheus

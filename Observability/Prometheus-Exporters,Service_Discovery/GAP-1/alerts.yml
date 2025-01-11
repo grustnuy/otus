@@ -19,6 +19,42 @@ groups:
           summary: Prometheus not connected to alertmanager (instance {{ $labels.instance }})
           description: "Prometheus cannot connect the alertmanager\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
+      - alert: High CPU usage
+        expr: node_cpu_seconds_total{site="prod"} > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on DB instance {{ $labels.ds_id }}"
+          description: "The CPU usage \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+
+      - alert: High memory usage
+        expr: node_memory_MemTotal_bytes{site="prod"} > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on DB instance {{ $labels.ds_id }}"
+          description: "The memory usage \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+
+      - alert: Disk I|O usage is High
+        expr: node_disk_io_time_seconds_total{site="prod"} >= 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk IO hight instance {{ $labels.ds_id }}"
+          description: "The disk I|O usage \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+         
+      - alert: Disk space usage is High
+        expr: node_filesystem_size_bytes >= 107
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space usage on DB instance {{ $labels.ds_id }}"
+          description: "The disk space usage \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+
 
   - name: BlackBox_exporter
     rules:
@@ -26,7 +62,9 @@ groups:
         expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
         for: 0m
         labels:
-          severity: critical
+          severity: warning
         annotations:
           summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
           description: "HTTP status code is not 200-399\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+

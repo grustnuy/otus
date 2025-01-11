@@ -1,0 +1,49 @@
+#amtool check-config /etc/prometheus/alertmanager.yml ##Проверка конфига
+global:
+ resolve_timeout: 5m
+ telegram_api_url: "https://api.telegram.org"
+
+templates:
+  - '/etc/prometheus/alertmanager_templates/*.tmpl'
+
+receivers:
+  - name: blackhole
+  - name: alerts-warning
+    telegram_configs:
+     - chat_id: -1002422680632
+       message_thread_id: 2
+       bot_token: {{ bot_token }}
+       api_url: "https://api.telegram.org"
+       send_resolved: true
+       parse_mode: HTML
+
+  - name: alerts-critical
+    telegram_configs:
+     - chat_id: -1002422680632
+       message_thread_id: 4
+       bot_token: 75{{ bot_token }}
+       api_url: "https://api.telegram.org"
+       send_resolved: true
+       parse_mode: HTML
+ 
+
+route:
+  group_by: ['alertname', 'instance', 'severity']
+  group_wait: 15s
+  group_interval: 30s
+  repeat_interval: 1h
+  receiver: alerts-warning
+  routes:
+   - receiver: alerts-warning
+     continue: true
+     matchers:
+       - severity="warning"
+   - receiver: alerts-critical
+     continue: true
+     matchers:
+       - severity="critical"
+
+inhibit_rules:
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="warning"]
+    equal: ['alertname', 'dev', 'instance']

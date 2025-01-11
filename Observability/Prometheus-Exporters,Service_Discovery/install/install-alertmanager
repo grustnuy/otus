@@ -1,0 +1,44 @@
+https://prometheus.io/download/#alertmanager
+
+wget https://github.com/prometheus/alertmanager/releases/download/v0.28.0-rc.0/alertmanager-0.28.0-rc.0.linux-amd64.tar.gz
+mkdir -p /etc/alertmanager /var/lib/prometheus/alertmanager
+tar -zxf alertmanager-*.linux-amd64.tar.gz
+cd alertmanager-*.linux-amd64
+cp alertmanager amtool /usr/local/bin/
+cp alertmanager.yml /etc/alertmanager
+cd .. && rm -rf alertmanager-*.linux-amd64/
+useradd --no-create-home --shell /bin/false alertmanager
+chown -R alertmanager:alertmanager /etc/alertmanager /var/lib/prometheus/alertmanager
+chown alertmanager:alertmanager /usr/local/bin/{alertmanager,amtool}
+
+nano /etc/systemd/system/alertmanager.service
+    [Unit]
+    Description=Alertmanager Service
+    After=network.target
+
+    [Service]
+    EnvironmentFile=-/etc/default/alertmanager
+    User=alertmanager
+    Group=alertmanager
+    Type=simple
+    ExecStart=/usr/local/bin/alertmanager \
+            --config.file=/etc/alertmanager/alertmanager.yml \
+            --storage.path=/var/lib/prometheus/alertmanager \
+            --cluster.advertise-address=0.0.0.0:9093 \
+            $ALERTMANAGER_OPTS
+    ExecReload=/bin/kill -HUP $MAINPID
+    Restart=on-failure
+
+    [Install]
+    WantedBy=multi-user.target
+
+systemctl enable alertmanager
+systemctl start alertmanager
+
+#Установка web alertmanager
+sudo apt install prometheus-alertmanager 
+/usr/share/prometheus/alertmanager/generate-ui.sh
+Настройка alertmanager
+nano /etc/prometheus/alertmanager.yml
+
+http://192.168.64.128:9093/#/status

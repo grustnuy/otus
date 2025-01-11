@@ -29,3 +29,6 @@
 
 ![html](img/vivtoria2.JPG)
 
+### Уведомления в telegram
+![html](img/telegram-alerts.JPG)
+

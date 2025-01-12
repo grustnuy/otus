@@ -20,7 +20,7 @@ groups:
           description: "Prometheus cannot connect the alertmanager\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
       - alert: High CPU usage
-        expr: 1 * avg(1 - rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance) <60
+        expr: 1 * avg(1 - rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance) >0.5
         for: 5m
         labels:
           severity: warning

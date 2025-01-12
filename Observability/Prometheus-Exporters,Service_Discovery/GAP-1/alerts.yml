@@ -20,13 +20,13 @@ groups:
           description: "Prometheus cannot connect the alertmanager\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
       - alert: High CPU usage
-        expr: node_cpu_seconds_total{site="prod"} > 50
+        expr: 1 * avg(1 - rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance) <60
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High CPU usage on DB instance {{ $labels.ds_id }}"
-          description: "The CPU usage \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+          summary: "High CPU usage instance {{ $labels.ds_id }}"
+          description: "Загрузка CPU превышает 40% \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
 
       - alert: High memory usage
         expr: node_memory_MemTotal_bytes{site="prod"} > 50

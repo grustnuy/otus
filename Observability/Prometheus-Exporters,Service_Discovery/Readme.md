@@ -31,4 +31,6 @@
 
 ### Уведомления в telegram
 ![html](img/telegram-alerts.JPG)
+![html](img/telegram-alerts2.JPG)
+![html](img/telegram-alerts3.JPG)
 

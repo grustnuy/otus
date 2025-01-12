@@ -26,7 +26,7 @@ groups:
           severity: warning
         annotations:
           summary: "High CPU usage instance {{ $labels.ds_id }}"
-          description: "Загрузка CPU превышает 40% \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+          description: "Загрузка CPU превышает 50% \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
 
       - alert: High memory usage
         expr: node_memory_MemTotal_bytes{site="prod"} > 50

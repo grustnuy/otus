@@ -1,4 +1,4 @@
-# Установка и настройка Prometheus, использование exporters
+# 1. Установка и настройка Prometheus, использование exporters
 
 В каталоге [GAP-1](GAP-1) находятся файлы конфигурации prometheus и alertmanager
 
@@ -20,7 +20,7 @@
 ![html](img/alert.JPG)
 ![html](img/alert2.JPG)
 
-### Разворачивание хранилище метрик VictoriaMetrics
+# 2. Разворачивание хранилища метрик VictoriaMetrics
 ![html](img/vivtoria.JPG)
 
 ### Проверка отправки метрик в хранилище
@@ -32,12 +32,13 @@
 
 ![html](img/vivtoria2.JPG)
 
+# 3. Алертинг
 ### Уведомления в telegram
 ![html](img/telegram-alerts.JPG)
 ![html](img/telegram-alerts2.JPG)
 ![html](img/telegram-alerts3.JPG)
 
-# Grafana - продвинутое использование
+# 4. Grafana - продвинутое использование
 
 ### app
 ![html](GAP-2/grafana-cms.JPG)
@@ -47,7 +48,7 @@
 
 
 
-# Zabbix
+# 5. Zabbix
 ![html](img/zabbix.JPG)
 
 #### скрипт генерирующий метрики:

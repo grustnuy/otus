@@ -37,6 +37,16 @@
 ![html](img/telegram-alerts2.JPG)
 ![html](img/telegram-alerts3.JPG)
 
+### Grafana - продвинутое использование
+
+app
+![html](GAP-2/grafana-cms.JPG)
+infra
+![html](GAP-2/grafana-infra.JPG)
+![html](GAP-2/grafana-infra2.JPG)
+
+
+
 ### Развернут Zabbix
 ![html](img/zabbix.JPG)
 

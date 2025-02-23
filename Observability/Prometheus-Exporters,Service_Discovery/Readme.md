@@ -37,20 +37,20 @@
 ![html](img/telegram-alerts2.JPG)
 ![html](img/telegram-alerts3.JPG)
 
-### Grafana - продвинутое использование
+# Grafana - продвинутое использование
 
-app
+### app
 ![html](GAP-2/grafana-cms.JPG)
-infra
+### infra
 ![html](GAP-2/grafana-infra.JPG)
 ![html](GAP-2/grafana-infra2.JPG)
 
 
 
-### Развернут Zabbix
+# Zabbix
 ![html](img/zabbix.JPG)
 
-скрипт генерирующий метрики:
+#### скрипт генерирующий метрики:
 
     #!/bin/bash
 
@@ -81,13 +81,13 @@ infra
      UserParameter=otus, /etc/zabbix/zabbix_agent2.d/otus_metrics.sh
 
 
-Настройка 
+### Настройка 
 ![html](img/zabbix-discovery.JPG)
 ![html](img/zabbix-itemprototype.JPG)
 ![html](img/zabbix-tryggerprototype.JPG)
 
-Получение метрик
+### Получение метрик
 ![html](img/lld-metrics.JPG)
 
-Алертинг
+### Алертинг
 ![html](img/telegram-alerts-zabbix.JPG)

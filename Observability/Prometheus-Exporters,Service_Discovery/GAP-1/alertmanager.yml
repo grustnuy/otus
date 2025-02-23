@@ -21,7 +21,7 @@ receivers:
     telegram_configs:
      - chat_id: -1002422680632
        message_thread_id: 4
-       bot_token: {{ bot_token }}
+       bot_token: 75{{ bot_token }}
        api_url: "https://api.telegram.org"
        send_resolved: true
        parse_mode: HTML

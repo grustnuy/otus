@@ -36,7 +36,7 @@ groups:
         annotations:
           summary: "High CPU usage on instance {{ $labels.ds_id }}"
           description: "Загрузка CPU превышает 90% \n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
-          
+
 
       - alert: High memory usage
         expr: node_memory_MemTotal_bytes{site="prod"} > 50

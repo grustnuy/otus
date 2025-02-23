@@ -244,7 +244,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - https://192.168.64.128    # Target to probe with https.
+        - http://192.168.64.128    # Target to probe with http.
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -291,6 +291,8 @@ groups:
           summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
           description: "HTTP status code is not 200-399\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
+#Проверка правила
+promtool check rules /etc/prometheus/rules.yml
 # Примеры правил 
 https://samber.github.io/awesome-prometheus-alerts/rules.html
 

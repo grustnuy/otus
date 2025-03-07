@@ -1,0 +1,112 @@
+#Install Telegraf
+
+wget -q https://repos.influxdata.com/influxdata-archive_compat.key
+echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c influxdata-archive_compat.key' | sha256sum -c && cat influxdata-archive_compat.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg > /dev/null
+echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+
+sudo apt-get update && sudo apt-get install telegraf
+
+#Install influxdb
+# influxdata-archive_compat.key GPG fingerprint:
+#     9D53 9D90 D332 8DC7 D6C8 D3B9 D8FF 8E1F 7DF8 B07E
+wget -q https://repos.influxdata.com/influxdata-archive_compat.key
+echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c influxdata-archive_compat.key' | sha256sum -c && cat influxdata-archive_compat.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg > /dev/null
+echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+
+sudo apt-get update && sudo apt-get install influxdb2
+
+#Install Chronograf
+wget https://dl.influxdata.com/chronograf/releases/chronograf_1.10.6_amd64.deb
+sudo dpkg -i chronograf_1.10.6_amd64.deb
+
+#Install Kapacitor
+wget https://dl.influxdata.com/kapacitor/releases/kapacitor_1.7.6-1_amd64.deb
+sudo dpkg -i kapacitor_1.7.6-1_amd64.deb
+
+systemctl enable kapacitor influxdb  && systemctl start kapacitor influxdb
+
+kapacitord config > kapacitor.conf
+
+useradd --no-create-home --shell /bin/false kapacitor
+mkdir -p /var/lib/kapacitor /run/kapacitor
+chown -R kapacitor:kapacitor /var/lib/kapacitor /run/kapacitor /etc/kapacitor
+
+systemctl daemon-reload
+systemctl enable kapacitor
+systemctl start kapacitor
+
+
+# Настройка Capacitor
+[[influxdb]]
+  # Connect to an InfluxDB cluster
+  # Kapacitor can subscribe, query and write to this cluster.
+  # Using InfluxDB is not required and can be disabled.
+  enabled = true
+  default = true
+  name = "cms"
+  urls = ["http://localhost:8086"]
+  username = "home"
+  password = "My-Token"
+  timeout = 0
+  # Absolute path to pem encoded CA file.
+  # A CA can be provided without a key/cert pair
+  #   ssl-ca = "/etc/kapacitor/ca.pem"
+  # Absolutes paths to pem encoded key and cert files.
+  #   ssl-cert = "/etc/kapacitor/cert.pem"
+  #   ssl-key = "/etc/kapacitor/key.pem"
+
+  # Do not verify the TLS/SSL certificate.
+  # This is insecure.
+  insecure-skip-verify = false
+
+  # Maximum time to try and connect to InfluxDB during startup
+  startup-timeout = "5m"
+
+  # Turn off all subscriptions
+  disable-subscriptions = true
+
+
+
+# Настройка мониторинга PHP
+Раскоментировать параметры PHP для мониторинга:
+sudo nano /etc/php/8.3/fpm/pool.d/www.conf
+pm.status_path = /phpfpm-status 
+ping.path = /ping
+
+
+
+Добавление location в конфигурационный файл nginx:
+
+sudo nano /etc/nginx/sites-available/wordpresslocation = /phpfpm-status {
+        access_log off;
+        allow 127.0.0.1;
+        allow 192.168.64.1;
+        allow 192.168.64.128;
+        deny all;
+        include fastcgi_params;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location = /ping {
+        access_log off;
+        allow 127.0.0.1;
+        allow 192.168.64.1;
+        allow 192.168.64.128;
+        deny all;
+        include fastcgi_params;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+    location /stub_status {
+        stub_status;
+        allow 127.0.0.1;
+        allow 192.168.64.1;
+        allow 192.168.64.128;
+        deny all;
+    }
+
+
+#Добавление правила алерта
+kapacitor -url http://192.168.64.132:9092 define cpu_alert_batch -type stream -tick /var/lib/kapacitor/scripts/cpu_alert_batch.tick
+

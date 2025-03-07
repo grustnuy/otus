@@ -48,10 +48,10 @@
 
 
 
-# 5. Zabbix
+# 5. Развернут Zabbix
 ![html](img/zabbix.JPG)
 
-#### скрипт генерирующий метрики:
+### скрипт генерирующий метрики:
 
     #!/bin/bash
 
@@ -92,3 +92,17 @@
 
 ### Алертинг
 ![html](img/telegram-alerts-zabbix.JPG)
+
+
+# 6. TICK stack
+
+### Процесс развертывания стэка [TICK-1](install/install%20-tick)
+
+### Настройка dashboard
+![html](TICK-1/tick-dashboard.JPG)
+
+### Добавлены TICKscripts 
+![html](TICK-1/tick-scripts.JPG)
+
+## Отправка alerts в Telegram
+![html](TICK-1/tick-telegram.JPG)

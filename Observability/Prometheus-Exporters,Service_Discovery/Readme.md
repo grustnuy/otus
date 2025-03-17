@@ -106,3 +106,18 @@
 
 ## Отправка alerts в Telegram
 ![html](TICK-1/tick-telegram.JPG)
+
+
+# 7. Beats - инструменты доставки данных
+
+### Заметки по развертывания  [elastic & kibana](install/install-elk)
+
+### Файлы конфигурации beats:
+- [Filebite](ELK-1/filebeat.yml)
+- [Metricbeat ](ELK-1/metricbeat.yml)
+- [Heartbeat](ELK-1/heartbeat.yml)
+
+### Полученные данные в Kibana
+![html](img/kibana-beats.JPG)
+
+![html](img/kibana-beats2.JPG)

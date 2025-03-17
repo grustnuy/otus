@@ -113,7 +113,7 @@
 ### Заметки по развертывания  [elastic & kibana](install/install-elk)
 
 ### Файлы конфигурации beats:
-- [Filebite](ELK-1/filebeat.yml)
+- [Filebeat](ELK-1/filebeat.yml)
 - [Metricbeat ](ELK-1/metricbeat.yml)
 - [Heartbeat](ELK-1/heartbeat.yml)
 

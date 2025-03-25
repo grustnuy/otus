@@ -113,7 +113,7 @@
 ### Заметки по развертывания  [elastic & kibana](install/install-elk)
 
 ### Файлы конфигурации beats:
-- [Filebeat](ELK-1/filebeat.yml)
+- [Filebeate](ELK-1/filebeat.yml)
 - [Metricbeat ](ELK-1/metricbeat.yml)
 - [Heartbeat](ELK-1/heartbeat.yml)
 
@@ -121,3 +121,19 @@
 ![html](img/kibana-beats.JPG)
 
 ![html](img/kibana-beats2.JPG)
+
+# 8. Системы агрегации сообщений Logstash/Vector 
+### beats настроены на отправку в logstash  [filebeat](ELK-2/filebeat.yml), [metricbeat](ELK-2/metricbeat.yml)
+### Файлы конфигурации:
+- [Logstash](ELK-2/my.conf)
+- [Vector](ELK-2/vector.yaml)
+
+### Полученные данные в Kibana
+Данные из logstash
+![html](img/kibana-logstash.JPG)
+
+
+Данные из Vector
+![html](img/kibana-vector.JPG)
+
+![html](img/kibana-vector2.JPG)

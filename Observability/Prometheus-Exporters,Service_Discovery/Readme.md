@@ -145,12 +145,12 @@
 - [Promtail](Loki/promtail-local-config.yaml)
 - [Grafana Loki](Loki/loki-local-config.yaml)
 
-### Полученные данные в Kibana
-Promtail
+### Полученные данные
+#### Promtail
 ![html](img/promtail.JPG)
 
-Grafana Loki
+#### Grafana Loki
 ![html](img/loki.JPG)
 
-Grafana
+#### Grafana
 ![html](img/grafana-loki.JPG)

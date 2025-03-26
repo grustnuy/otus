@@ -137,3 +137,20 @@
 ![html](img/kibana-vector.JPG)
 
 ![html](img/kibana-vector2.JPG)
+
+
+# 9. Grafana Loki - управление логами и доставка 
+### Развернута Grafana и Grafana Loki. Шипером выбран promtail. 
+### Файлы конфигурации:
+- [Promtail](Loki/promtail-local-config.yaml)
+- [Grafana Loki](Loki/loki-local-config.yaml)
+
+### Полученные данные в Kibana
+Promtail
+![html](img/promtail.JPG)
+
+Grafana Loki
+![html](img/loki.JPG)
+
+Grafana
+![html](img/grafana-loki.JPG)
